@@ -5,7 +5,7 @@ import (
 )
 
 type Struct struct {
-	AdminID string `env:"ADMIN_TELEGRAM_ID"`
+	AdminID int `env:"ADMIN_TELEGRAM_ID"`
 	BotToken string `env:"BOT_TOKEN"`
 }
 

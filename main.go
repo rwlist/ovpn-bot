@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/petuhovskiy/telegram"
 	"github.com/petuhovskiy/telegram/updates"
 	"log"
 
+	"github.com/rwlist/ovpn-bot/app"
 	"github.com/rwlist/ovpn-bot/conf"
 )
 
@@ -14,18 +16,32 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bot := telegram.NewBot(cfg.BotToken)
+	bot := telegram.NewBotWithOpts(cfg.BotToken, &telegram.Opts{
+		Middleware: func(handler telegram.RequestHandler) telegram.RequestHandler {
+			return func(methodName string, req interface{}) (message json.RawMessage, err error) {
+				res, err := handler(methodName, req)
+				if err != nil {
+					log.Println("Telegram response error: ", err)
+				}
+
+				return res, err
+			}
+		},
+	})
 
 	ch, err := updates.StartPolling(bot, telegram.GetUpdatesRequest{
 		Offset:         0,
 		Limit:          50,
-		Timeout:        60,
+		Timeout:        10,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for upd := range ch {
+	l := app.NewLogic()
+	h := app.NewHandler(bot, l, cfg)
 
+	for upd := range ch {
+		h.Handle(upd)
 	}
 }
