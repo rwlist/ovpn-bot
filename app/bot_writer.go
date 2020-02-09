@@ -8,27 +8,19 @@ import (
 
 const flushTimeout = 2 * time.Second
 
-type botWriterState uint
-
-const (
-	stateNoop botWriterState = iota
-	stateAwaitingFlush
-)
-
 type botWriter struct {
 	bot    *telegram.Bot
 	chatID int
 
-	buf []byte
-	m   sync.Mutex
-	state botWriterState
+	buf          []byte
+	m            sync.Mutex
+	waitingFlush bool
 }
 
 func NewBotWriter(bot *telegram.Bot, chatID int) *botWriter {
 	return &botWriter{
 		bot:    bot,
 		chatID: chatID,
-		state:  stateNoop,
 	}
 }
 
@@ -46,7 +38,7 @@ func (w *botWriter) Flush() {
 	w.m.Lock()
 	defer w.m.Unlock()
 
-	w.state = stateNoop
+	w.waitingFlush = false
 
 	if len(w.buf) == 0 {
 		return
@@ -64,10 +56,10 @@ func (w *botWriter) DeferFlush() {
 	w.m.Lock()
 	defer w.m.Unlock()
 
-	if w.state != stateNoop {
+	if w.waitingFlush {
 		return
 	}
-	w.state = stateAwaitingFlush
+	w.waitingFlush = true
 
 	time.AfterFunc(flushTimeout, func() {
 		w.Flush()

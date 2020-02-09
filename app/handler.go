@@ -114,14 +114,19 @@ func (h *Handler) commandGenerate(chatID int, profileName string) {
 		return
 	}
 
-	res, err := h.logic.CommandGenerate(profileName)
+	w := NewBotWriter(h.bot, chatID)
+
+	res, err := h.logic.CommandGenerate(w, profileName)
 	if err != nil {
 		text := fmt.Sprintf("Error while generate:\n\n%s", err)
 		h.sendMessage(chatID, text)
 		return
 	}
 
-	h.sendMessage(chatID, res)
+	_, _ = h.bot.SendDocument(&telegram.SendDocumentRequest{
+		ChatID:              str(chatID),
+		Document:            NewBytesUploader(profileName + ".ovpn", res),
+	})
 }
 
 func (h *Handler) commandRemove(chatID int) {

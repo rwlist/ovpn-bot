@@ -141,8 +141,25 @@ func (l *Logic) CommandStatus() (string, error) {
 	return text, nil
 }
 
-func (l *Logic) CommandGenerate(profileName string) (string, error) {
-	return "ok", nil
+func (l *Logic) CommandGenerate(w *botWriter, profileName string) ([]byte, error) {
+	dataVolume := prefix + data
+	dataMount := dataVolume+":/etc/openvpn"
+
+	// docker run -v ovpn_data:/etc/openvpn --rm -i kylemanna/openvpn easyrsa build-client-full client_name nopass
+	err := l.execute(w, []string{"docker", "run", "-v", dataMount, "--rm", "-i", "kylemanna/openvpn", "easyrsa", "build-client-full", profileName, "nopass"})
+	if err != nil {
+		return nil, err
+	}
+
+	// docker run -v ovpn_data:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient client_name
+	configWriter := bytes.NewBuffer(nil)
+	err = l.execute(configWriter, []string{"docker", "run", "-v", dataMount, "--rm", "kylemanna/openvpn", "ovpn_getclient", profileName})
+	if err != nil {
+		return nil, err
+	}
+
+	configData := configWriter.Bytes()
+	return configData, nil
 }
 
 func (l *Logic) execute(w io.Writer, args []string) error {
