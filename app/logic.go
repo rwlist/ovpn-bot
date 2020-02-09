@@ -153,7 +153,7 @@ func (l *Logic) CommandGenerate(w *botWriter, profileName string) ([]byte, error
 
 	// docker run -v ovpn_data:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient client_name
 	configWriter := bytes.NewBuffer(nil)
-	err = l.execute(configWriter, []string{"docker", "run", "-v", dataMount, "--rm", "kylemanna/openvpn", "ovpn_getclient", profileName})
+	err = l.execute3(configWriter, []string{"docker", "run", "-v", dataMount, "--rm", "kylemanna/openvpn", "ovpn_getclient", profileName}, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -167,12 +167,16 @@ func (l *Logic) execute(w io.Writer, args []string) error {
 }
 
 func (l *Logic) execute2(w io.Writer, args []string, stdin io.Reader) error {
+	_, _ = fmt.Fprintf(w, "Executing command: `%s`", strings.Join(args, " "))
+
+	return l.execute3(w, args, stdin)
+}
+
+func (l *Logic) execute3(w io.Writer, args []string, stdin io.Reader) error {
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stdin = stdin
 	cmd.Stdout = w
 	cmd.Stderr = w
-
-	_, _ = fmt.Fprintf(w, "Executing command: `%s`", strings.Join(args, " "))
 
 	err := cmd.Run()
 	return err

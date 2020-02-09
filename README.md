@@ -8,6 +8,8 @@ TODO: one-liner bash script or single docker run.
 ## Keep it as simple as that
 
 Supported commands:
-- [ ] Initialize containers
-- [ ] Show status
-- [ ] Generate config
+- [X] Initialize containers
+- [X] Show status
+- [X] Generate config
+- [X] Remove everything
+- [ ] Show help
