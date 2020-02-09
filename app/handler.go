@@ -76,6 +76,9 @@ func (h *Handler) handleCommand(chatID int, cmds []string) {
 		}
 		h.commandGenerate(chatID, profileName)
 
+	case "/remove":
+		h.commandRemove(chatID)
+
 	default:
 		h.commandNotFound(chatID)
 	}
@@ -119,6 +122,13 @@ func (h *Handler) commandGenerate(chatID int, profileName string) {
 	}
 
 	h.sendMessage(chatID, res)
+}
+
+func (h *Handler) commandRemove(chatID int) {
+	go func() {
+		w := NewBotWriter(h.bot, chatID)
+		h.logic.CommandRemove(w)
+	}()
 }
 
 func (h *Handler) commandNotFound(chatID int) {

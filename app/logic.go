@@ -42,7 +42,7 @@ func (r readCloser) Close() error {
 func (l *Logic) CommandInit(w io.Writer, addr string) error {
 	dataVolume := prefix + data
 
-	_, _, _, ok := parseAddr(addr)
+	_, _, port, ok := parseAddr(addr)
 	if !ok {
 		return fmt.Errorf(`"%s" is not valid addr`, addr)
 	}
@@ -68,8 +68,46 @@ func (l *Logic) CommandInit(w io.Writer, addr string) error {
 		return err
 	}
 
+	udpContainer := prefix + udp
+	tcpContainer := prefix + tcp
+
+	// docker run -v $OVPN_DATA:/etc/openvpn -d --restart=always --name $(NAME)_udp -p $(PORT):1194/udp --cap-add=NET_ADMIN kylemanna/openvpn ovpn_run --proto udp
+	err = l.execute(w, []string{"docker", "run", "-v", dataMount, "-d", "--restart=always", "--name", udpContainer, "-p", port+":1194/udp", "--cap-add=NET_ADMIN", "kylemanna/openvpn", "ovpn_run", "--proto", "udp"})
+	if err != nil {
+		return err
+	}
+
+	// docker run -v $OVPN_DATA:/etc/openvpn -d --restart=always --name $(NAME)_tcp -p $(PORT):1194/tcp --cap-add=NET_ADMIN kylemanna/openvpn ovpn_run --proto tcp
+	err = l.execute(w, []string{"docker", "run", "-v", dataMount, "-d", "--restart=always", "--name", tcpContainer, "-p", port+":1194/tcp", "--cap-add=NET_ADMIN", "kylemanna/openvpn", "ovpn_run", "--proto", "tcp"})
+	if err != nil {
+		return err
+	}
+
 	_, _ = fmt.Fprintf(w, "All done, init completed!")
 	return nil
+}
+
+func (l *Logic) CommandRemove(w io.Writer) {
+	dataVolume := prefix + data
+	udpContainer := prefix + udp
+	tcpContainer := prefix + tcp
+
+	err := l.execute(w, []string{"docker", "volume", "rm", dataVolume})
+	if err != nil {
+		_, _ = fmt.Fprintf(w, "remove error: %v\n", err)
+	}
+
+	err = l.execute(w, []string{"docker", "rm", "-rf", udpContainer})
+	if err != nil {
+		_, _ = fmt.Fprintf(w, "remove error: %v\n", err)
+	}
+
+	err = l.execute(w, []string{"docker", "rm", "-rf", tcpContainer})
+	if err != nil {
+		_, _ = fmt.Fprintf(w, "remove error: %v\n", err)
+	}
+
+	_, _ = fmt.Fprintf(w, "All removed!")
 }
 
 func (l *Logic) CommandStatus() (string, error) {

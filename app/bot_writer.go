@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const flushTimeout = time.Second
+const flushTimeout = 2 * time.Second
 
 type botWriterState uint
 
