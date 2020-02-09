@@ -12,4 +12,4 @@ Supported commands:
 - [X] Show status
 - [X] Generate config
 - [X] Remove everything
-- [ ] Show help
+- [X] Show help

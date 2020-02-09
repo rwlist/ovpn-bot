@@ -137,5 +137,16 @@ func (h *Handler) commandRemove(chatID int) {
 }
 
 func (h *Handler) commandNotFound(chatID int) {
-	h.sendMessage(chatID, "command not found.")
+	h.commandHelp(chatID)
+}
+
+func (h *Handler) commandHelp(chatID int) {
+	str := `Need some help?
+
+/init tcp://a.b:80	initialize everything
+/status				displays "docker ps"
+/generate <name> 	generates new config
+/remove				remove everything`
+
+	h.sendMessage(chatID, str)
 }
