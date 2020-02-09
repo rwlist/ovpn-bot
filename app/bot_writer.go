@@ -3,7 +3,10 @@ package app
 import (
 	"github.com/petuhovskiy/telegram"
 	"sync"
+	"time"
 )
+
+const flushTimeout = time.Second
 
 type botWriter struct {
 	bot *telegram.Bot
@@ -21,7 +24,7 @@ func NewBotWriter(bot *telegram.Bot, chatID int) *botWriter {
 }
 
 func (w *botWriter) Write(b []byte) (n int, err error) {
-	defer w.Flush()
+	defer w.DeferFlush()
 
 	w.m.Lock()
 	defer w.m.Unlock()
@@ -44,4 +47,10 @@ func (w *botWriter) Flush() {
 	})
 
 	w.buf = nil
+}
+
+func (w *botWriter) DeferFlush() {
+	time.AfterFunc(flushTimeout, func() {
+		w.Flush()
+	})
 }
