@@ -78,14 +78,16 @@ func (h *Handler) handleCommand(chatID int, cmds []string) {
 }
 
 func (h *Handler) commandInit(chatID int) {
-	res, err := h.logic.CommandInit()
-	if err != nil {
-		text := fmt.Sprintf("Error while init:\n\n%s", err)
-		h.sendMessage(chatID, text)
-		return
-	}
+	go func() {
+		w := NewBotWriter(h.bot, chatID)
 
-	h.sendMessage(chatID, res)
+		err := h.logic.CommandInit(w)
+		if err != nil {
+			text := fmt.Sprintf("Error while init:\n\n%s", err)
+			h.sendMessage(chatID, text)
+			return
+		}
+	}()
 }
 
 func (h *Handler) commandStatus(chatID int) {

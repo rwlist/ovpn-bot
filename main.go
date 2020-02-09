@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/docker/docker/client"
 	"github.com/petuhovskiy/telegram"
 	"github.com/petuhovskiy/telegram/updates"
 	"log"
@@ -12,6 +13,11 @@ import (
 
 func main() {
 	cfg, err := conf.ParseEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dockerClient, err := client.NewEnvClient()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,7 +44,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	l := app.NewLogic()
+	l := app.NewLogic(dockerClient)
 	h := app.NewHandler(bot, l, cfg)
 
 	for upd := range ch {
