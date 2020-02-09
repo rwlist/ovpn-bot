@@ -92,17 +92,19 @@ func (l *Logic) CommandRemove(w io.Writer) {
 	udpContainer := prefix + udp
 	tcpContainer := prefix + tcp
 
-	err := l.execute(w, []string{"docker", "volume", "rm", dataVolume})
+	var err error
+
+	err = l.execute(w, []string{"docker", "rm", "-f", udpContainer})
 	if err != nil {
 		_, _ = fmt.Fprintf(w, "remove error: %v\n", err)
 	}
 
-	err = l.execute(w, []string{"docker", "rm", "-rf", udpContainer})
+	err = l.execute(w, []string{"docker", "rm", "-f", tcpContainer})
 	if err != nil {
 		_, _ = fmt.Fprintf(w, "remove error: %v\n", err)
 	}
 
-	err = l.execute(w, []string{"docker", "rm", "-rf", tcpContainer})
+	err = l.execute(w, []string{"docker", "volume", "rm", dataVolume})
 	if err != nil {
 		_, _ = fmt.Fprintf(w, "remove error: %v\n", err)
 	}
