@@ -63,7 +63,7 @@ func (l *Logic) CommandInit(w io.Writer, addr string) error {
 
 	// docker run -v $OVPN_DATA:/etc/openvpn --rm -it kylemanna/openvpn ovpn_initpki
 	lnReader := bytes.NewReader([]byte{'\n', '\n'})
-	err = l.execute2(w, []string{"docker", "run", "-v", dataMount, "--rm", "-it", "kylemanna/openvpn", "ovpn_initpki", "nopass"}, lnReader)
+	err = l.execute2(w, []string{"docker", "run", "-v", dataMount, "--rm", "-i", "kylemanna/openvpn", "ovpn_initpki", "nopass"}, lnReader)
 	if err != nil {
 		return err
 	}
