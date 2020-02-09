@@ -2,7 +2,7 @@ package app
 
 import "regexp"
 
-var parseAddrPattern = regexp.MustCompile(`(\w+)://([\w.]+):\d+`)
+var parseAddrPattern = regexp.MustCompile(`(\w+)://([\w.]+):(\d+)`)
 
 func parseAddr(addr string) (proto string, host string, port string, ok bool) {
 	match := parseAddrPattern.FindStringSubmatch(addr)
