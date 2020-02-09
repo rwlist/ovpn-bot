@@ -1,5 +1,7 @@
 FROM golang:1.13.7-alpine AS go-builder
 
+WORKDIR /usr/src/app
+
 # Install build dependencies for docker-gen TODO:
 RUN apk add --update \
         curl \
@@ -31,6 +33,7 @@ RUN apk add --update \
         curl \
         jq \
         openssl \
+        docker \
     && rm /var/cache/apk/*
 
 COPY --from=go-builder /app ./
