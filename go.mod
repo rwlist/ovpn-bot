@@ -12,5 +12,6 @@ require (
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/petuhovskiy/telegram v0.0.0-20200207220211-6250cca70f10
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 )

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/docker/docker/api/types"
@@ -38,24 +39,34 @@ func (r readCloser) Close() error {
 	return nil
 }
 
-/*
-	docker volume create --name $OVPN_DATA
-	docker run -v $OVPN_DATA:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u $(PROTO)://$(HOST):$(PORT)
-	docker run -v $OVPN_DATA:/etc/openvpn --rm -it kylemanna/openvpn ovpn_initpki
- */
-func (l *Logic) CommandInit(w io.Writer) error {
+func (l *Logic) CommandInit(w io.Writer, addr string) error {
 	dataVolume := prefix + data
 
+	_, _, _, ok := parseAddr(addr)
+	if !ok {
+		return fmt.Errorf(`"%s" is not valid addr`, addr)
+	}
+
+	// docker volume create --name $OVPN_DATA
 	err := l.execute(w, []string{"docker", "volume", "create", "--name", dataVolume})
 	if err != nil {
 		return err
 	}
 
-	//dock := command.NewDockerCli(readCloser{}, w, w)
-	//run := container.NewRunCommand(dock)
-	//args := []string{"--name", dataName, "-v", "/etc/openvpn", "busybox"}
-	//run.SetArgs(args)
-	//err := run.RunE(run, args)
+	dataMount := dataVolume+":/etc/openvpn"
+
+	// docker run -v $OVPN_DATA:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u $(PROTO)://$(HOST):$(PORT)
+	err = l.execute(w, []string{"docker", "run", "-v", dataMount, "--rm", "kylemanna/openvpn", "ovpn_genconfig", "-u", addr})
+	if err != nil {
+		return err
+	}
+
+	// docker run -v $OVPN_DATA:/etc/openvpn --rm -it kylemanna/openvpn ovpn_initpki
+	lnReader := bytes.NewReader([]byte{'\n', '\n'})
+	err = l.execute2(w, []string{"docker", "run", "-v", dataMount, "--rm", "-it", "kylemanna/openvpn", "ovpn_initpki", "nopass"}, lnReader)
+	if err != nil {
+		return err
+	}
 
 	_, _ = fmt.Fprintf(w, "All done, init completed!")
 	return nil
@@ -95,7 +106,12 @@ func (l *Logic) CommandGenerate(profileName string) (string, error) {
 }
 
 func (l *Logic) execute(w io.Writer, args []string) error {
+	return l.execute2(w, args, nil)
+}
+
+func (l *Logic) execute2(w io.Writer, args []string, stdin io.Reader) error {
 	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdin = stdin
 	cmd.Stdout = w
 	cmd.Stderr = w
 

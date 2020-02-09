@@ -60,7 +60,11 @@ func (h *Handler) handleCommand(chatID int, cmds []string) {
 	cmd := cmds[0]
 	switch cmd {
 	case "/init":
-		h.commandInit(chatID)
+		addr := ""
+		if len(cmds) > 1 {
+			addr = cmds[1]
+		}
+		h.commandInit(chatID, addr)
 
 	case "/status":
 		h.commandStatus(chatID)
@@ -77,11 +81,11 @@ func (h *Handler) handleCommand(chatID int, cmds []string) {
 	}
 }
 
-func (h *Handler) commandInit(chatID int) {
+func (h *Handler) commandInit(chatID int, addr string) {
 	go func() {
 		w := NewBotWriter(h.bot, chatID)
 
-		err := h.logic.CommandInit(w)
+		err := h.logic.CommandInit(w, addr)
 		if err != nil {
 			text := fmt.Sprintf("Error while init:\n\n%s", err)
 			h.sendMessage(chatID, text)
