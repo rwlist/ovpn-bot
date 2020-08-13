@@ -2,23 +2,23 @@ package app
 
 import (
 	"fmt"
-	"github.com/petuhovskiy/telegram"
 	"strings"
 
-	"github.com/rwlist/ovpn-bot/conf"
+	"github.com/petuhovskiy/telegram"
 )
 
 type Handler struct {
-	bot *telegram.Bot
+	bot   *telegram.Bot
 	logic *Logic
-	cfg *conf.Struct
+
+	adminIDs []int
 }
 
-func NewHandler(bot *telegram.Bot, logic *Logic, cfg *conf.Struct) *Handler {
+func NewHandler(bot *telegram.Bot, logic *Logic, adminIDs []int) *Handler {
 	return &Handler{
-		bot: bot,
-		logic: logic,
-		cfg: cfg,
+		bot:      bot,
+		logic:    logic,
+		adminIDs: adminIDs,
 	}
 }
 
@@ -28,7 +28,16 @@ func (h *Handler) Handle(upd telegram.Update) {
 	}
 
 	msg := upd.Message
-	if msg.From.ID != h.cfg.AdminID {
+
+	isAdmin := false
+	for _, adminID := range h.adminIDs {
+		if msg.From.ID == adminID {
+			isAdmin = true
+			break
+		}
+	}
+
+	if !isAdmin {
 		return
 	}
 
@@ -37,8 +46,8 @@ func (h *Handler) Handle(upd telegram.Update) {
 
 func (h *Handler) sendMessage(chatID int, text string) {
 	_, _ = h.bot.SendMessage(&telegram.SendMessageRequest{
-		ChatID:                str(chatID),
-		Text:                  text,
+		ChatID: str(chatID),
+		Text:   text,
 	})
 }
 
@@ -124,8 +133,8 @@ func (h *Handler) commandGenerate(chatID int, profileName string) {
 	}
 
 	_, _ = h.bot.SendDocument(&telegram.SendDocumentRequest{
-		ChatID:              str(chatID),
-		Document:            NewBytesUploader(profileName + ".ovpn", res),
+		ChatID:   str(chatID),
+		Document: NewBytesUploader(profileName+".ovpn", res),
 	})
 }
 

@@ -8,10 +8,10 @@ import (
 
 func TestParseAddr(t *testing.T) {
 	type test struct {
-		in string
+		in    string
 		proto string
-		host string
-		port string
+		host  string
+		port  string
 	}
 
 	cases := []test{

@@ -36,16 +36,16 @@ func main() {
 	})
 
 	ch, err := updates.StartPolling(bot, telegram.GetUpdatesRequest{
-		Offset:         0,
-		Limit:          50,
-		Timeout:        10,
+		Offset:  0,
+		Limit:   50,
+		Timeout: 10,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	l := app.NewLogic(dockerClient)
-	h := app.NewHandler(bot, l, cfg)
+	h := app.NewHandler(bot, l, cfg.AdminIDs)
 
 	for upd := range ch {
 		h.Handle(upd)

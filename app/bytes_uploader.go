@@ -13,7 +13,7 @@ type BytesUploader struct {
 func NewBytesUploader(name string, b []byte) *BytesUploader {
 	return &BytesUploader{
 		name: name,
-		b: b,
+		b:    b,
 	}
 }
 
