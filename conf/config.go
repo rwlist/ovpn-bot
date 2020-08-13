@@ -5,7 +5,7 @@ import (
 )
 
 type Struct struct {
-	AdminID int `env:"ADMIN_TELEGRAM_ID"`
+	AdminIDs []int  `env:"ADMIN_TELEGRAM_ID" envSeparator:","` // Comma-separated list of the bot admins' Telegram IDs
 	BotToken string `env:"BOT_TOKEN"`
 }
 

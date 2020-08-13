@@ -15,8 +15,8 @@ const (
 	prefix = "ovpn_"
 
 	data = "data"
-	tcp = "tcp"
-	udp = "udp"
+	tcp  = "tcp"
+	udp  = "udp"
 )
 
 type Logic struct {
@@ -53,7 +53,7 @@ func (l *Logic) CommandInit(w io.Writer, addr string) error {
 		return err
 	}
 
-	dataMount := dataVolume+":/etc/openvpn"
+	dataMount := dataVolume + ":/etc/openvpn"
 
 	// docker run -v $OVPN_DATA:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u $(PROTO)://$(HOST):$(PORT)
 	err = l.execute(w, []string{"docker", "run", "-v", dataMount, "--rm", "kylemanna/openvpn", "ovpn_genconfig", "-u", addr})
@@ -72,13 +72,13 @@ func (l *Logic) CommandInit(w io.Writer, addr string) error {
 	tcpContainer := prefix + tcp
 
 	// docker run -v $OVPN_DATA:/etc/openvpn -d --restart=always --name $(NAME)_udp -p $(PORT):1194/udp --cap-add=NET_ADMIN kylemanna/openvpn ovpn_run --proto udp
-	err = l.execute(w, []string{"docker", "run", "-v", dataMount, "-d", "--restart=always", "--name", udpContainer, "-p", port+":1194/udp", "--cap-add=NET_ADMIN", "kylemanna/openvpn", "ovpn_run", "--proto", "udp"})
+	err = l.execute(w, []string{"docker", "run", "-v", dataMount, "-d", "--restart=always", "--name", udpContainer, "-p", port + ":1194/udp", "--cap-add=NET_ADMIN", "kylemanna/openvpn", "ovpn_run", "--proto", "udp"})
 	if err != nil {
 		return err
 	}
 
 	// docker run -v $OVPN_DATA:/etc/openvpn -d --restart=always --name $(NAME)_tcp -p $(PORT):1194/tcp --cap-add=NET_ADMIN kylemanna/openvpn ovpn_run --proto tcp
-	err = l.execute(w, []string{"docker", "run", "-v", dataMount, "-d", "--restart=always", "--name", tcpContainer, "-p", port+":1194/tcp", "--cap-add=NET_ADMIN", "kylemanna/openvpn", "ovpn_run", "--proto", "tcp"})
+	err = l.execute(w, []string{"docker", "run", "-v", dataMount, "-d", "--restart=always", "--name", tcpContainer, "-p", port + ":1194/tcp", "--cap-add=NET_ADMIN", "kylemanna/openvpn", "ovpn_run", "--proto", "tcp"})
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (l *Logic) CommandStatus() (string, error) {
 
 func (l *Logic) CommandGenerate(w *botWriter, profileName string) ([]byte, error) {
 	dataVolume := prefix + data
-	dataMount := dataVolume+":/etc/openvpn"
+	dataMount := dataVolume + ":/etc/openvpn"
 
 	// docker run -v ovpn_data:/etc/openvpn --rm -i kylemanna/openvpn easyrsa build-client-full client_name nopass
 	err := l.execute(w, []string{"docker", "run", "-v", dataMount, "--rm", "-i", "kylemanna/openvpn", "easyrsa", "build-client-full", profileName, "nopass"})
