@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  bot:
+    image: arthurwow/ovpnbot
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
